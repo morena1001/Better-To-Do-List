@@ -2,7 +2,7 @@ import React from 'react';
 import '../../App.css';
 import { useEffect } from 'react';
 import './Home.css';
-import { Model, createItem, updateItem } from '../Logic';
+import { Model, CreateItem } from '../Logic';
 
 function Home() {
     useEffect(() => {
@@ -21,7 +21,7 @@ function Home() {
                     <Model />
                 </div>
             </div>
-            <input type="text" className="add-item" id='input' onKeyDown={createItem} autoFocus/>
+            <input type="text" className="add-item" id='input' onKeyDown={CreateItem} autoFocus/>
             <button className="clear" id="clear"><i className="fa fa-trash" id='x'></i></button>
         </>
     );

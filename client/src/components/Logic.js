@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect } from 'react';
-import { useState } from 'react';
+// import { useState } from 'react';
 
 class counter {
     static count = 1;
@@ -15,7 +15,7 @@ export function Model() {
           .then((data) =>  {
             // setData(data[0].word);
             for (let i = 0; i < data.length; i++) {
-                readItem(data[i]);
+                ReadItem(data[i]);
             }
         });
     }, []);
@@ -28,21 +28,29 @@ export function Model() {
     );
 }
 
-export function createItem(e) {
-    if (e.key == "Enter" && e.target.value != "") {
+export function CreateItem(e) {
+    if (e.key === "Enter" && e.target.value !== "") {
         let string = 
             `{
                 "id": ${counter.count}, 
                 "task": "${e.target.value}", 
                 "completed": "no"
             }`;
-        readItem(JSON.parse(string));
+        ReadItem(JSON.parse(string)); 
 
-            
+        fetch('/api/tasks', {
+            method: "POST",
+            headers: {
+                "Content-type": "application/json"
+            },
+            body: string,
+        })
+        .then((res) => res.json())
+        .then((data) => {console.log(data)});
     }
 }
 
-function readItem(data) {
+function ReadItem(data) {
         let newItem = document.createElement("li");
         newItem.setAttribute("class", "item");
         newItem.setAttribute("id", data.id);
@@ -56,7 +64,7 @@ function readItem(data) {
         newItemInput.setAttribute("value", "complete");
         newItemInput.setAttribute("class", "checkbox");
         newItemInput.setAttribute("job", "complete");
-        newItemInput.onclick = updateItem;
+        newItemInput.onclick = UpdateItem;
 
         let newItemSpan = document.createElement("span");
         newItemSpan.setAttribute("class", "check-text");
@@ -80,7 +88,7 @@ function readItem(data) {
         newItem.appendChild(newItemLabel);
         document.getElementById("list").appendChild(newItem);
 
-        if (data.completed == "yes") {
+        if (data.completed === "yes") {
             newItemInput.setAttribute("checked", "yes");
             newItemSpan.setAttribute("style", "text-decoration: line-through 1px");
         }
@@ -88,7 +96,7 @@ function readItem(data) {
         counter.count++;
 }
 
-export function updateItem(e) {
+export function UpdateItem(e) {
     if (!e.target.checked) {
         e.target.parentElement.children[1].setAttribute("style", "text-decoration: none");
     }
@@ -97,6 +105,6 @@ export function updateItem(e) {
     }
 }
 
-function deleteItem() {
+function DeleteItem() {
 
 }
