@@ -3,34 +3,29 @@ var data = require('./db.json');
 const path = require('path');
 const express = require("express");
 const fs = require('fs');
-// const bodyParser = require("body-parser");
-// const jsonServer = require('json-server');
-
-// const server = jsonServer.create();
-// const router = jsonServer.router('db.json');
-// const middlewares = jsonServer.defaults();
 
 const PORT = process.env.PORT || 3001;
-// var urlencodedParser = bodyParser.urlencoded({ extended: false })  
 const app = express();
 
-// server.use(middlewares);
-// server.use('/api/tasks', router);
 app.use(express.static(path.resolve(__dirname, '../client/build')));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.get("/api", (req, res) => {
-  res.json({message: "Hello from server!"});
-});
-
-// app.get("/api/words", (req, res) => {
-//   res.send(data.words);
-// });
-
 app.get("/api/tasks", (req, res) => {
   res.send(data.tasks);
 });
+
+app.get("/api/tasks/:id", (req, res) => {
+  for (let i = 0; i < data.tasks.length; i++) {
+    if (data.tasks[i].id == req.params.id) {
+      console.log(data.tasks[i]);
+      res.send(data.tasks[i]);
+      return;
+    }
+  }
+  console.log("NAH");
+  res.sendStatus(404);
+})
 
 app.post("/api/tasks", (req, res) => {
   response = {
@@ -44,7 +39,36 @@ app.post("/api/tasks", (req, res) => {
 
   console.log(response);
   res.send(JSON.stringify(response));
-  // res.send(JSON.stringify(JSON.stringify(data)));
+});
+
+app.put("/api/tasks/:id", (req, res) => {
+  for (let i = 0; i < data.tasks.length; i++) {
+    if (data.tasks[i].id == req.params.id) {
+      data.tasks[i].completed = req.body.completed;
+      fs.writeFileSync("./server/db.json", JSON.stringify(data));
+
+      console.log(data.tasks[i]);
+      res.send(data.tasks[i]);
+      return;
+    }
+  }
+  console.log("404");
+  res.sendStatus(404);
+});
+
+app.delete("/api/tasks/:id", (req, res) => {
+  for (let i = 0; i < data.tasks.length; i++) {
+    if (data.tasks[i].id == req.params.id) {
+      data.tasks.splice(i, 1);
+      fs.writeFileSync("./server/db.json", JSON.stringify(data));
+
+      console.log(data.tasks);
+      res.send(data.tasks);
+      return;
+    }
+  }
+  console.log("404");
+  res.sendStatus(404);
 });
 
 app.listen(PORT, () => {

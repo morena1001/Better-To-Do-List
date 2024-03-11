@@ -37,6 +37,7 @@ export function CreateItem(e) {
                 "completed": "no"
             }`;
         ReadItem(JSON.parse(string)); 
+        e.target.value = "";
 
         fetch('/api/tasks', {
             method: "POST",
@@ -51,49 +52,50 @@ export function CreateItem(e) {
 }
 
 function ReadItem(data) {
-        let newItem = document.createElement("li");
-        newItem.setAttribute("class", "item");
-        newItem.setAttribute("id", data.id);
+    let newItem = document.createElement("li");
+    newItem.setAttribute("class", "item");
+    newItem.setAttribute("id", data.id);
 
-        let newItemLabel = document.createElement("label");
-        newItemLabel.setAttribute("class", "check");
+    let newItemLabel = document.createElement("label");
+    newItemLabel.setAttribute("class", "check");
 
-        let newItemInput = document.createElement("input");
-        newItemInput.setAttribute("type", "checkbox");
-        newItemInput.setAttribute("name", "checkbox");
-        newItemInput.setAttribute("value", "complete");
-        newItemInput.setAttribute("class", "checkbox");
-        newItemInput.setAttribute("job", "complete");
-        newItemInput.onclick = UpdateItem;
+    let newItemInput = document.createElement("input");
+    newItemInput.setAttribute("type", "checkbox");
+    newItemInput.setAttribute("name", "checkbox");
+    newItemInput.setAttribute("value", "complete");
+    newItemInput.setAttribute("class", "checkbox");
+    newItemInput.setAttribute("job", "complete");
+    newItemInput.onclick = UpdateItem;
 
-        let newItemSpan = document.createElement("span");
-        newItemSpan.setAttribute("class", "check-text");
-        newItemSpan.setAttribute("name", "checkbox-text");
-        newItemSpan.innerHTML = data.task;
+    let newItemSpan = document.createElement("span");
+    newItemSpan.setAttribute("class", "check-text");
+    newItemSpan.setAttribute("name", "checkbox-text");
+    newItemSpan.innerHTML = data.task;
 
-        let newItemButton = document.createElement("button");
-        newItemButton.setAttribute("value", "delete");
-        newItemButton.setAttribute("class", "delete");
-        newItemButton.setAttribute("job", "delete");
+    let newItemButton = document.createElement("button");
+    newItemButton.setAttribute("value", "delete");
+    newItemButton.setAttribute("class", "delete");
+    newItemButton.setAttribute("job", "delete");
+    newItemButton.onclick = DeleteItem;
 
-        let newItemIcon = document.createElement("i");
-        newItemIcon.setAttribute("class", "fa fa-trash");
-        newItemIcon.setAttribute("value", "delete");
+    let newItemIcon = document.createElement("i");
+    newItemIcon.setAttribute("class", "fa fa-trash");
+    newItemIcon.setAttribute("value", "delete");
 
-        newItemLabel.appendChild(newItemInput);
-        newItemLabel.appendChild(newItemSpan);
+    newItemLabel.appendChild(newItemInput);
+    newItemLabel.appendChild(newItemSpan);
 
-        newItemButton.appendChild(newItemIcon);
-        newItemLabel.appendChild(newItemButton);
-        newItem.appendChild(newItemLabel);
-        document.getElementById("list").appendChild(newItem);
+    newItemButton.appendChild(newItemIcon);
+    newItemLabel.appendChild(newItemButton);
+    newItem.appendChild(newItemLabel);
+    document.getElementById("list").appendChild(newItem);
 
-        if (data.completed === "yes") {
-            newItemInput.setAttribute("checked", "yes");
-            newItemSpan.setAttribute("style", "text-decoration: line-through 1px");
-        }
+    if (data.completed === "yes") {
+        newItemInput.setAttribute("checked", "yes");
+        newItemSpan.setAttribute("style", "text-decoration: line-through 1px");
+    }
 
-        counter.count++;
+    counter.count++;
 }
 
 export function UpdateItem(e) {
@@ -103,8 +105,39 @@ export function UpdateItem(e) {
     else {
         e.target.parentElement.children[1].setAttribute("style", "text-decoration: line-through 1px");
     }
+
+    let itemId = e.target.parentElement.parentElement.id;
+    let itemTask = e.target.parentElement.children[1].innerHTML;
+    let itemCompleted = e.target.checked ? "yes" : "no";
+    let string = 
+            `{
+                "id": ${itemId}, 
+                "task": "${itemTask}", 
+                "completed": "${itemCompleted}"
+            }`;
+    
+    fetch("/api/tasks/" + itemId, {
+        method: "PUT",
+        headers: {
+            "Content-type": "application/json"
+        },
+        body: string
+    })
+    .then((res) => res.json())
+    .then((data) => {console.log(JSON.stringify(data))});
 }
 
-function DeleteItem() {
+function DeleteItem(e) {
+    counter.count--;
+    let name = e.target.tagName;
+    let itemId = name === "I" ? e.target.parentElement.parentElement.parentElement.id : 
+                e.target.parentElement.parentElement.id;
 
+    document.getElementById("list").removeChild(document.getElementById(itemId));
+
+    fetch("/api/tasks/" + itemId, {
+        method: "DELETE"
+    })
+    .then((res) => res.json())
+    .then((data) => {console.log(JSON.stringify(data))});
 }
